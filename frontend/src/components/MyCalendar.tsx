@@ -21,13 +21,33 @@ export const MyCalendar: React.FC = () => {
 
   // Try to get userId from localStorage or fallback to a generated local id to avoid
   // foreign key errors if 'mock-user-id' does not exist in the DB
-  const userId = localStorage.getItem('userId') || 'mock-user-id';
+  const [userId, setUserId] = useState<string | null>(localStorage.getItem('userId'));
 
   useEffect(() => {
-    fetchSlots();
-  }, []);
+    // If we don't have a userId, we fetch the current profile to get it.
+    const fetchUserIdAndSlots = async () => {
+      try {
+        let currentUserId = userId;
+        if (!currentUserId) {
+           const profileRes = await api.get('/auth/me');
+           currentUserId = profileRes.data.userId;
+           setUserId(currentUserId);
+           localStorage.setItem('userId', currentUserId as string);
+        }
+
+        if (currentUserId) {
+          const res = await api.get(`/users/${currentUserId}/busy-slots`);
+          setSlots(res.data);
+        }
+      } catch (error) {
+         console.error('Failed to fetch profile or slots', error);
+      }
+    };
+    fetchUserIdAndSlots();
+  }, [userId]);
 
   const fetchSlots = async () => {
+    if (!userId) return;
     try {
       const res = await api.get(`/users/${userId}/busy-slots`);
       setSlots(res.data);

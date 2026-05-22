@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Delete, Param, Body, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Delete, Param, Body, UseGuards, Req, ForbiddenException } from '@nestjs/common';
 import { BusySlotsService } from './busy-slots.service';
 import { BusySlot } from '../entities/busy-slot.entity';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
@@ -9,15 +9,22 @@ export class BusySlotsController {
   constructor(private readonly busySlotsService: BusySlotsService) {}
 
   @Get()
-  async getUserBusySlots(@Param('userId') userId: string): Promise<BusySlot[]> {
+  async getUserBusySlots(@Param('userId') userId: string, @Req() req: any): Promise<BusySlot[]> {
+    if (req.user.userId !== userId) {
+        throw new ForbiddenException('You can only view your own busy slots');
+    }
     return this.busySlotsService.getUserBusySlots(userId);
   }
 
   @Post()
   async createBusySlot(
     @Param('userId') userId: string,
+    @Req() req: any,
     @Body() body: { startTime: string; endTime: string; title?: string }
   ): Promise<BusySlot> {
+    if (req.user.userId !== userId) {
+        throw new ForbiddenException('You can only create your own busy slots');
+    }
     return this.busySlotsService.createBusySlot(userId, {
       startTime: new Date(body.startTime),
       endTime: new Date(body.endTime),
@@ -32,7 +39,13 @@ export class BusySlotsControllerRoot {
   constructor(private readonly busySlotsService: BusySlotsService) {}
 
   @Delete(':id')
-  async deleteBusySlot(@Param('id') id: string): Promise<void> {
+  async deleteBusySlot(@Param('id') id: string, @Req() req: any): Promise<void> {
+    // Need to verify ownership of the slot
+    const slots = await this.busySlotsService.getUserBusySlots(req.user.userId);
+    const ownsSlot = slots.some(slot => slot.id === id);
+    if (!ownsSlot) {
+        throw new ForbiddenException('You can only delete your own busy slots');
+    }
     return this.busySlotsService.deleteBusySlot(id);
   }
 }

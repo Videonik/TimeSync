@@ -5,6 +5,14 @@ const api = axios.create({
   baseURL: 'http://localhost:3000', // Update this based on env later
 });
 
+api.interceptors.request.use((config) => {
+  const token = localStorage.getItem('jwt_token');
+  if (token && config.headers) {
+    config.headers.Authorization = `Bearer ${token}`;
+  }
+  return config;
+});
+
 export const createEvent = async (eventData: Partial<Event>, participantsEmails: string[]): Promise<Event> => {
   const { data } = await api.post('/events', { eventData, participantsEmails });
   return data;
