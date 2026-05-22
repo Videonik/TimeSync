@@ -1,47 +1,81 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { getEventSlots, submitVote } from '../api';
+import { getEvent, submitVote } from '../api';
 import type { ParticipantAvailability } from '@scheduler/shared';
 
 export const VotingGrid: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const queryClient = useQueryClient();
   
-  // Hardcoded for demo purposes
-  const mockParticipantId = 'mock-participant-id'; 
+  // A simple state to track which participant is voting.
+  // In a real app, this might come from auth context or a special URL token sent to their email.
+  const [selectedParticipantId, setSelectedParticipantId] = useState<string>('');
 
-  const { data: slots, isLoading } = useQuery({
-    queryKey: ['eventSlots', id],
-    queryFn: () => getEventSlots(id!),
+  const { data: eventDetails, isLoading } = useQuery({
+    queryKey: ['eventDetails', id],
+    queryFn: () => getEvent(id!),
     enabled: !!id,
   });
 
   const voteMutation = useMutation({
     mutationFn: ({ slotId, vote }: { slotId: string; vote: ParticipantAvailability }) => 
-      submitVote(id!, mockParticipantId, slotId, vote),
+      submitVote(id!, selectedParticipantId, slotId, vote),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['eventSlots', id] });
+      queryClient.invalidateQueries({ queryKey: ['eventDetails', id] });
+      alert('Vote recorded successfully!');
     },
+    onError: (err: any) => {
+      alert('Error recording vote: ' + (err.message || 'Unknown error'));
+    }
   });
 
   const handleVote = (slotId: string, vote: ParticipantAvailability) => {
+    if (!selectedParticipantId) {
+      alert('Please select who you are first!');
+      return;
+    }
     voteMutation.mutate({ slotId, vote });
   };
 
-  if (isLoading) return <div className="text-center py-10 text-gray-500">Loading timeslots...</div>;
-  if (!slots || slots.length === 0) return (
+  if (isLoading) return <div className="text-center py-10 text-gray-500">Loading meeting details...</div>;
+  if (!eventDetails) return (
     <div className="text-center py-10 text-gray-500 bg-white rounded-xl shadow-sm border border-gray-100 p-8">
-      No timeslots found. Generate some first!
+      Meeting not found.
     </div>
   );
 
+  const { event, participants, timeSlots } = eventDetails;
+
   return (
-    <div className="bg-white rounded-xl shadow-md border border-gray-100 p-8 w-full max-w-2xl">
-      <h2 className="text-2xl font-bold text-gray-800 mb-6 border-b pb-4">Select Suitable Time</h2>
+    <div className="bg-white rounded-xl shadow-md border border-gray-100 p-8 w-full max-w-3xl">
+      <h2 className="text-2xl font-bold text-gray-800 mb-2">{event.title}</h2>
+      <p className="text-gray-500 mb-6 border-b pb-4">Select the best time that works for you.</p>
       
+      {participants && participants.length > 0 && (
+        <div className="mb-6 bg-blue-50 p-4 rounded-lg border border-blue-100">
+          <label className="block text-sm font-medium text-blue-900 mb-2">Who are you?</label>
+          <select 
+            value={selectedParticipantId}
+            onChange={(e) => setSelectedParticipantId(e.target.value)}
+            className="w-full px-4 py-2 border border-blue-200 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+          >
+            <option value="" disabled>Select your email...</option>
+            {participants.map(p => (
+              <option key={p.id} value={p.id}>{p.email}</option>
+            ))}
+          </select>
+        </div>
+      )}
+
+      {(!timeSlots || timeSlots.length === 0) && (
+         <div className="text-center py-10 text-gray-500">
+           No timeslots available. The algorithm could not find a match.
+         </div>
+      )}
+
       <div className="flex flex-col gap-4">
-        {slots.map(slot => (
+        {timeSlots && timeSlots.map(slot => (
           <div 
             key={slot.id} 
             className="flex flex-col sm:flex-row items-center justify-between p-4 rounded-lg border border-gray-200 hover:border-blue-300 hover:shadow-sm transition-all"

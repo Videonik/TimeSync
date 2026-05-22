@@ -5,12 +5,12 @@ const api = axios.create({
   baseURL: 'http://localhost:3000', // Update this based on env later
 });
 
-export const createEvent = async (eventData: Partial<Event>): Promise<Event> => {
-  const { data } = await api.post('/events', eventData);
+export const createEvent = async (eventData: Partial<Event>, participantsEmails: string[]): Promise<Event> => {
+  const { data } = await api.post('/events', { eventData, participantsEmails });
   return data;
 };
 
-export const getEvent = async (id: string): Promise<Event> => {
+export const getEvent = async (id: string): Promise<{ event: Event, participants: Participant[], timeSlots: TimeSlot[] }> => {
   const { data } = await api.get(`/events/${id}`);
   return data;
 };

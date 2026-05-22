@@ -10,23 +10,29 @@ export const CreateEventForm: React.FC = () => {
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
 
+  const [participantsInput, setParticipantsInput] = useState('');
+
   const mutation = useMutation({
-    mutationFn: createEvent,
+    mutationFn: (payload: { eventData: any, emails: string[] }) => createEvent(payload.eventData, payload.emails),
     onSuccess: (data) => {
-      // Mock organizer for now
       navigate(`/event/${data.id}`);
     },
   });
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    const emails = participantsInput.split(',').map(email => email.trim()).filter(email => email !== '');
+    
     mutation.mutate({
-      title,
-      durationMinutes: duration,
-      dateRangeStart: new Date(startDate),
-      dateRangeEnd: new Date(endDate),
-      organizerId: 'mock-organizer-id', // Would come from auth context
-      status: 'published'
+      eventData: {
+        title,
+        durationMinutes: duration,
+        dateRangeStart: new Date(startDate),
+        dateRangeEnd: new Date(endDate),
+        organizerId: 'mock-organizer-id', // Would come from auth context eventually
+        status: 'published'
+      },
+      emails: emails
     });
   };
 
@@ -59,6 +65,17 @@ export const CreateEventForm: React.FC = () => {
             <option value={45}>45 minutes</option>
             <option value={60}>1 hour</option>
           </select>
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">Participants (comma separated emails)</label>
+          <input 
+            type="text" 
+            placeholder="alice@example.com, bob@example.com" 
+            value={participantsInput} 
+            onChange={(e) => setParticipantsInput(e.target.value)} 
+            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-colors"
+          />
         </div>
 
         <div className="grid grid-cols-2 gap-4">

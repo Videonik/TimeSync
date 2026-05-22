@@ -7,8 +7,8 @@ export class EventsController {
   constructor(private readonly eventsService: EventsService) {}
 
   @Post()
-  async createEvent(@Body() eventData: Partial<Event>) {
-    return this.eventsService.createEvent(eventData);
+  async createEvent(@Body() body: { eventData: Partial<Event>, participantsEmails: string[] }) {
+    return this.eventsService.createEvent(body.eventData, body.participantsEmails);
   }
 
   @Get(':id')

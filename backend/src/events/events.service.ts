@@ -22,13 +22,36 @@ export class EventsService {
     private schedulerService: SchedulerService,
   ) {}
 
-  async createEvent(eventData: Partial<Event>): Promise<Event> {
+  async createEvent(eventData: Partial<Event>, participantsEmails: string[]): Promise<Event> {
     const event = this.eventRepository.create(eventData);
-    return this.eventRepository.save(event);
+    const savedEvent = await this.eventRepository.save(event);
+
+    if (participantsEmails && participantsEmails.length > 0) {
+      const participants = participantsEmails.map(email => this.participantRepository.create({
+        eventId: savedEvent.id,
+        email: email,
+        availability: 'unknown'
+      }));
+      await this.participantRepository.save(participants);
+    }
+
+    // Automatically generate initial slots based on current logic
+    await this.generateTimeSlots(savedEvent.id);
+
+    return savedEvent;
   }
 
-  async getEvent(id: string): Promise<Event | null> {
-    return this.eventRepository.findOne({ where: { id } });
+  async getEvent(id: string): Promise<{ event: Event, participants: Participant[], timeSlots: TimeSlot[] }> {
+    const event = await this.eventRepository.findOne({ where: { id } });
+    if (!event) throw new Error('Event not found');
+
+    const participants = await this.participantRepository.find({ where: { eventId: id } });
+    const timeSlots = await this.timeSlotRepository.find({ 
+      where: { eventId: id },
+      order: { score: 'DESC', startTime: 'ASC' }
+    });
+
+    return { event, participants, timeSlots };
   }
 
   async addParticipant(eventId: string, email: string): Promise<Participant> {
