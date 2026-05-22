@@ -1,6 +1,8 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom'
 import { CreateEventForm } from './components/CreateEventForm'
 import { VotingGrid } from './components/VotingGrid'
+import { AuthCallback } from './components/AuthCallback'
+import { LoginButton } from './components/LoginButton'
 
 function App() {
   return (
@@ -18,8 +20,9 @@ function App() {
                 TimeSync
               </h1>
             </div>
-            <nav>
+            <nav className="flex items-center">
               <a href="/" className="text-sm font-medium text-gray-500 hover:text-blue-600 transition-colors">New Meeting</a>
+              <LoginButton />
             </nav>
           </div>
         </header>
@@ -29,6 +32,7 @@ function App() {
           <Routes>
             <Route path="/" element={<CreateEventForm />} />
             <Route path="/event/:id" element={<VotingGrid />} />
+            <Route path="/auth/callback" element={<AuthCallback />} />
           </Routes>
         </main>
 

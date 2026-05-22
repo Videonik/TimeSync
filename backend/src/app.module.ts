@@ -8,8 +8,7 @@ import { User } from './entities/user.entity';
 import { Event } from './entities/event.entity';
 import { TimeSlot } from './entities/time-slot.entity';
 import { Participant } from './entities/participant.entity';
-import { AuthController } from './auth/auth.controller';
-import { AuthService } from './auth/auth.service';
+import { AuthModule } from './auth/auth.module';
 import { EventsController } from './events/events.controller';
 import { EventsService } from './events/events.service';
 import { SchedulerService } from './scheduler/scheduler.service';
@@ -34,16 +33,9 @@ import { SchedulerService } from './scheduler/scheduler.service';
       inject: [ConfigService],
     }),
     TypeOrmModule.forFeature([User, Event, TimeSlot, Participant]),
-    JwtModule.registerAsync({
-      imports: [ConfigModule],
-      useFactory: (configService: ConfigService) => ({
-        secret: configService.get<string>('JWT_SECRET', 'super-secret'),
-        signOptions: { expiresIn: '60s' },
-      }),
-      inject: [ConfigService],
-    }),
+    AuthModule,
   ],
-  controllers: [AppController, AuthController, EventsController],
-  providers: [AppService, AuthService, EventsService, SchedulerService],
+  controllers: [AppController, EventsController],
+  providers: [AppService, EventsService, SchedulerService],
 })
 export class AppModule {}
