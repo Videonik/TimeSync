@@ -28,6 +28,10 @@
     "@nestjs/platform-express": "^11.0.1",
     "@nestjs/typeorm": "^11.0.1",
     "@scheduler/shared": "^1.0.0",
+    "axios": "^1.16.1",
+    "moment": "^2.30.1",
+    "moment-timezone": "^0.6.2",
+    "node-ical": "^0.26.1",
     "passport": "^0.7.0",
     "passport-jwt": "^4.0.1",
     "passport-yandex": "^0.0.5",
@@ -35,6 +39,7 @@
     "redis": "^5.12.1",
     "reflect-metadata": "^0.2.2",
     "rxjs": "^7.8.1",
+    "tsdav": "^2.2.2",
     "typeorm": "^1.0.0"
   },
   "devDependencies": {
@@ -45,6 +50,8 @@
     "@nestjs/testing": "^11.0.1",
     "@types/express": "^5.0.0",
     "@types/jest": "^30.0.0",
+    "@types/moment": "^2.11.29",
+    "@types/moment-timezone": "^0.5.13",
     "@types/node": "^24.0.0",
     "@types/passport-jwt": "^4.0.1",
     "@types/supertest": "^7.0.0",

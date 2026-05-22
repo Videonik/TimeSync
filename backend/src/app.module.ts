@@ -12,6 +12,7 @@ import { AuthModule } from './auth/auth.module';
 import { EventsController } from './events/events.controller';
 import { EventsService } from './events/events.service';
 import { SchedulerService } from './scheduler/scheduler.service';
+import { YandexCalendarService } from './calendar/yandex-calendar.service';
 
 @Module({
   imports: [
@@ -36,6 +37,6 @@ import { SchedulerService } from './scheduler/scheduler.service';
     AuthModule,
   ],
   controllers: [AppController, EventsController],
-  providers: [AppService, EventsService, SchedulerService],
+  providers: [AppService, EventsService, SchedulerService, YandexCalendarService],
 })
 export class AppModule {}

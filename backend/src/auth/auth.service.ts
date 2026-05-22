@@ -24,13 +24,14 @@ export class AuthService {
           email: profile.email,
           name: profile.name,
           avatarUrl: profile.avatarUrl,
-          // Store encrypted tokens here later
+          encryptedTokens: profile.accessToken, // MVP: store access token for CalDAV
         });
       } else {
         // Update info if it changed
         user.yandexId = profile.yandexId;
         user.name = profile.name || user.name;
         user.avatarUrl = profile.avatarUrl || user.avatarUrl;
+        user.encryptedTokens = profile.accessToken || user.encryptedTokens;
       }
       
       await this.userRepository.save(user);

@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { User } from '../entities/user.entity';
+import { YandexCalendarService } from '../calendar/yandex-calendar.service';
 
 export interface TimeInterval {
   start: Date;
@@ -13,24 +14,37 @@ export interface UserIntervals {
 
 @Injectable()
 export class SchedulerService {
+  constructor(private yandexCalendarService: YandexCalendarService) {}
+
   /**
-   * Step 1 & 2: Mock fetching busy intervals from external APIs and convert to UTC.
-   * In a real implementation, this would fetch from Google Calendar or Yandex Calendar via OAuth tokens.
+   * Step 1 & 2: Fetch busy intervals from external APIs and convert to UTC.
    */
   async fetchBusyIntervals(users: User[], searchStart: Date, searchEnd: Date): Promise<UserIntervals[]> {
-    return users.map(user => {
-      // Mocking busy intervals. Real implementation uses user.encryptedTokens to fetch from external API.
-      // All intervals should be returned in UTC.
+    const promises = users.map(async user => {
+      let busyIntervals: TimeInterval[] = [];
       
-      // Let's create some dummy busy intervals for demonstration.
-      const busyIntervals: TimeInterval[] = [];
-      
-      // Convert everything to Date objects ensuring it's in UTC
+      // If user has a Yandex token (in real app, stored securely in DB upon OAuth)
+      // Here we assume encryptedTokens holds the access token for MVP.
+      if (user.encryptedTokens) {
+        const rawIntervals = await this.yandexCalendarService.getBusyIntervals(
+          user.encryptedTokens,
+          user.email,
+          searchStart,
+          searchEnd
+        );
+        busyIntervals = rawIntervals.map(r => ({
+          start: new Date(r.startTime),
+          end: new Date(r.endTime)
+        }));
+      }
+
       return {
         userId: user.id,
         busyIntervals: busyIntervals
       };
     });
+
+    return Promise.all(promises);
   }
 
   /**
