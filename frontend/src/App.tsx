@@ -1,8 +1,9 @@
-import { BrowserRouter, Routes, Route } from 'react-router-dom'
+import { BrowserRouter, Routes, Route, Link } from 'react-router-dom'
 import { CreateEventForm } from './components/CreateEventForm'
 import { VotingGrid } from './components/VotingGrid'
 import { AuthCallback } from './components/AuthCallback'
 import { LoginButton } from './components/LoginButton'
+import { MyCalendar } from './components/MyCalendar'
 
 function App() {
   return (
@@ -20,8 +21,9 @@ function App() {
                 TimeSync
               </h1>
             </div>
-            <nav className="flex items-center">
-              <a href="/" className="text-sm font-medium text-gray-500 hover:text-blue-600 transition-colors">Новая встреча</a>
+            <nav className="flex items-center gap-4">
+              <Link to="/" className="text-sm font-medium text-gray-500 hover:text-blue-600 transition-colors">Новая встреча</Link>
+              <Link to="/my-calendar" className="text-sm font-medium text-gray-500 hover:text-blue-600 transition-colors">Мой календарь</Link>
               <LoginButton />
             </nav>
           </div>
@@ -33,6 +35,7 @@ function App() {
             <Route path="/" element={<CreateEventForm />} />
             <Route path="/event/:id" element={<VotingGrid />} />
             <Route path="/auth/callback" element={<AuthCallback />} />
+            <Route path="/my-calendar" element={<MyCalendar />} />
           </Routes>
         </main>
 

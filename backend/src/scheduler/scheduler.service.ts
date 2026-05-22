@@ -1,6 +1,9 @@
 import { Injectable } from '@nestjs/common';
 import { User } from '../entities/user.entity';
 import { YandexCalendarService } from '../calendar/yandex-calendar.service';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+import { BusySlot } from '../entities/busy-slot.entity';
 
 export interface TimeInterval {
   start: Date;
@@ -14,7 +17,11 @@ export interface UserIntervals {
 
 @Injectable()
 export class SchedulerService {
-  constructor(private yandexCalendarService: YandexCalendarService) {}
+  constructor(
+    private yandexCalendarService: YandexCalendarService,
+    @InjectRepository(BusySlot)
+    private busySlotRepository: Repository<BusySlot>
+  ) {}
 
   /**
    * Step 1 & 2: Fetch busy intervals from external APIs and convert to UTC.
@@ -23,19 +30,36 @@ export class SchedulerService {
     const promises = users.map(async user => {
       let busyIntervals: TimeInterval[] = [];
       
+      // Fetch internal busy slots
+      const internalSlots = await this.busySlotRepository.createQueryBuilder('busySlot')
+        .where('busySlot.userId = :userId', { userId: user.id })
+        .andWhere('busySlot.startTime < :searchEnd', { searchEnd })
+        .andWhere('busySlot.endTime > :searchStart', { searchStart })
+        .getMany();
+
+      busyIntervals = internalSlots.map(slot => ({
+        start: new Date(slot.startTime),
+        end: new Date(slot.endTime)
+      }));
+
       // If user has a Yandex token (in real app, stored securely in DB upon OAuth)
       // Here we assume encryptedTokens holds the access token for MVP.
       if (user.encryptedTokens) {
-        const rawIntervals = await this.yandexCalendarService.getBusyIntervals(
-          user.encryptedTokens,
-          user.email,
-          searchStart,
-          searchEnd
-        );
-        busyIntervals = rawIntervals.map(r => ({
-          start: new Date(r.startTime),
-          end: new Date(r.endTime)
-        }));
+        try {
+          const rawIntervals = await this.yandexCalendarService.getBusyIntervals(
+            user.encryptedTokens,
+            user.email,
+            searchStart,
+            searchEnd
+          );
+          const externalIntervals = rawIntervals.map(r => ({
+            start: new Date(r.startTime),
+            end: new Date(r.endTime)
+          }));
+          busyIntervals = busyIntervals.concat(externalIntervals);
+        } catch (e) {
+           console.error(`Failed to fetch Yandex intervals for user ${user.id}`, e);
+        }
       }
 
       return {
@@ -171,7 +195,30 @@ export class SchedulerService {
     durationMinutes: number,
     bufferMinutes: number = 0
   ): Promise<(TimeInterval & { score: number, unavailableUsers: string[] })[]> {
-    if (users.length === 0) return [];
+
+    // For demo/diploma purposes: if no users are provided, generate mock slots within the requested range
+    if (users.length === 0) {
+      const mockSlots = [];
+      let currentStart = new Date(searchStart);
+      currentStart.setHours(10, 0, 0, 0); // Start mock slots at 10:00 AM
+
+      for (let i = 0; i < 5; i++) {
+        const slotEnd = new Date(currentStart);
+        slotEnd.setMinutes(slotEnd.getMinutes() + durationMinutes + bufferMinutes);
+
+        if (slotEnd.getTime() <= searchEnd.getTime()) {
+           mockSlots.push({
+             start: new Date(currentStart),
+             end: new Date(slotEnd),
+             score: 100,
+             unavailableUsers: []
+           });
+        }
+        // Next slot is 1 hour later
+        currentStart.setHours(currentStart.getHours() + 1);
+      }
+      return mockSlots;
+    }
 
     // 1 & 2: Fetch and UTC format
     const usersBusy = await this.fetchBusyIntervals(users, searchStart, searchEnd);
