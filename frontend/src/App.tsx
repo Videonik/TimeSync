@@ -21,7 +21,7 @@ function App() {
               </h1>
             </div>
             <nav className="flex items-center">
-              <a href="/" className="text-sm font-medium text-gray-500 hover:text-blue-600 transition-colors">New Meeting</a>
+              <a href="/" className="text-sm font-medium text-gray-500 hover:text-blue-600 transition-colors">Новая встреча</a>
               <LoginButton />
             </nav>
           </div>
@@ -39,7 +39,7 @@ function App() {
         {/* Simple Footer */}
         <footer className="bg-white border-t border-gray-200 py-6 mt-auto">
           <div className="max-w-5xl mx-auto px-4 text-center text-sm text-gray-400">
-            &copy; {new Date().getFullYear()} TimeSync App. All rights reserved.
+            &copy; {new Date().getFullYear()} Приложение TimeSync. Все права защищены.
           </div>
         </footer>
 

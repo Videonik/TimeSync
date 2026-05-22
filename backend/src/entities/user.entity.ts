@@ -23,4 +23,10 @@ export class User implements IUser {
 
   @Column({ nullable: true })
   encryptedTokens?: string;
+
+  @Column({ type: 'varchar', default: '09:00', nullable: true })
+  workingHoursStart?: string;
+
+  @Column({ type: 'varchar', default: '18:00', nullable: true })
+  workingHoursEnd?: string;
 }

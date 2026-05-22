@@ -168,7 +168,8 @@ export class SchedulerService {
     users: User[],
     searchStart: Date,
     searchEnd: Date,
-    durationMinutes: number
+    durationMinutes: number,
+    bufferMinutes: number = 0
   ): Promise<(TimeInterval & { score: number, unavailableUsers: string[] })[]> {
     if (users.length === 0) return [];
 
@@ -201,7 +202,7 @@ export class SchedulerService {
         }
 
         // Step 6: Filter by duration
-        const filtered = this.filterByDuration(commonFree, durationMinutes);
+        const filtered = this.filterByDuration(commonFree, durationMinutes, bufferMinutes);
         const comboUserIds = combo.map(u => u.userId);
         const unavailableUsers = allUserIds.filter(id => !comboUserIds.includes(id));
         const score = Math.round((k / usersFree.length) * 100);

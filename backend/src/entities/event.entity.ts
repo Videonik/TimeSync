@@ -16,6 +16,9 @@ export class Event implements IEvent {
   @Column()
   durationMinutes!: number;
 
+  @Column({ nullable: true, default: 0 })
+  bufferMinutes?: number;
+
   @Column({ type: 'varchar', default: 'draft' })
   status!: 'draft' | 'published' | 'completed';
 

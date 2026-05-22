@@ -81,7 +81,8 @@ export class EventsService {
       users,
       event.dateRangeStart,
       event.dateRangeEnd,
-      event.durationMinutes
+      event.durationMinutes,
+      event.bufferMinutes
     );
 
     // Save generated slots

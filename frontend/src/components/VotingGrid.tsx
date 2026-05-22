@@ -23,25 +23,25 @@ export const VotingGrid: React.FC = () => {
       submitVote(id!, selectedParticipantId, slotId, vote),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['eventDetails', id] });
-      alert('Vote recorded successfully!');
+      alert('Голос успешно учтен!');
     },
     onError: (err: any) => {
-      alert('Error recording vote: ' + (err.message || 'Unknown error'));
+      alert('Ошибка при записи голоса: ' + (err.message || 'Неизвестная ошибка'));
     }
   });
 
   const handleVote = (slotId: string, vote: ParticipantAvailability) => {
     if (!selectedParticipantId) {
-      alert('Please select who you are first!');
+      alert('Пожалуйста, выберите себя из списка участников!');
       return;
     }
     voteMutation.mutate({ slotId, vote });
   };
 
-  if (isLoading) return <div className="text-center py-10 text-gray-500">Loading meeting details...</div>;
+  if (isLoading) return <div className="text-center py-10 text-gray-500">Загрузка деталей встречи...</div>;
   if (!eventDetails) return (
     <div className="text-center py-10 text-gray-500 bg-white rounded-xl shadow-sm border border-gray-100 p-8">
-      Meeting not found.
+      Встреча не найдена.
     </div>
   );
 
@@ -50,17 +50,17 @@ export const VotingGrid: React.FC = () => {
   return (
     <div className="bg-white rounded-xl shadow-md border border-gray-100 p-8 w-full max-w-3xl">
       <h2 className="text-2xl font-bold text-gray-800 mb-2">{event.title}</h2>
-      <p className="text-gray-500 mb-6 border-b pb-4">Select the best time that works for you.</p>
+      <p className="text-gray-500 mb-6 border-b pb-4">Выберите наиболее подходящее для вас время.</p>
       
       {participants && participants.length > 0 && (
         <div className="mb-6 bg-blue-50 p-4 rounded-lg border border-blue-100">
-          <label className="block text-sm font-medium text-blue-900 mb-2">Who are you?</label>
+          <label className="block text-sm font-medium text-blue-900 mb-2">Кто вы?</label>
           <select 
             value={selectedParticipantId}
             onChange={(e) => setSelectedParticipantId(e.target.value)}
             className="w-full px-4 py-2 border border-blue-200 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
           >
-            <option value="" disabled>Select your email...</option>
+            <option value="" disabled>Выберите свой email...</option>
             {participants.map(p => (
               <option key={p.id} value={p.id}>{p.email}</option>
             ))}
@@ -70,7 +70,7 @@ export const VotingGrid: React.FC = () => {
 
       {(!timeSlots || timeSlots.length === 0) && (
          <div className="text-center py-10 text-gray-500">
-           No timeslots available. The algorithm could not find a match.
+           Слоты не найдены. Алгоритм не смог найти совпадения.
          </div>
       )}
 
@@ -95,7 +95,7 @@ export const VotingGrid: React.FC = () => {
                   slot.score === 100 ? 'bg-green-100 text-green-700' : 
                   (slot.score ?? 0) > 50 ? 'bg-orange-100 text-orange-700' : 'bg-red-100 text-red-700'
                 }`}>
-                  {slot.score}% Match
+                  {slot.score}% Совпадение
                 </span>
               </div>
             </div>
@@ -104,23 +104,23 @@ export const VotingGrid: React.FC = () => {
               <button 
                 onClick={() => handleVote(slot.id, 'available')}
                 className="flex-1 sm:flex-none p-2 rounded-md bg-green-50 text-green-600 hover:bg-green-100 hover:text-green-700 transition-colors border border-green-200 font-medium text-sm focus:ring-2 focus:ring-green-400 focus:outline-none"
-                title="Available"
+                title="Доступен"
               >
-                Available
+                Доступен
               </button>
               <button 
                 onClick={() => handleVote(slot.id, 'preferred')}
                 className="flex-1 sm:flex-none p-2 rounded-md bg-yellow-50 text-yellow-600 hover:bg-yellow-100 hover:text-yellow-700 transition-colors border border-yellow-200 font-medium text-sm focus:ring-2 focus:ring-yellow-400 focus:outline-none"
-                title="Preferred"
+                title="Предпочтительно"
               >
-                Preferred
+                Предпочтительно
               </button>
               <button 
                 onClick={() => handleVote(slot.id, 'unavailable')}
                 className="flex-1 sm:flex-none p-2 rounded-md bg-red-50 text-red-600 hover:bg-red-100 hover:text-red-700 transition-colors border border-red-200 font-medium text-sm focus:ring-2 focus:ring-red-400 focus:outline-none"
-                title="Unavailable"
+                title="Занят"
               >
-                Busy
+                Занят
               </button>
             </div>
           </div>

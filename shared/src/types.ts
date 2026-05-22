@@ -3,6 +3,8 @@ export interface User {
   email: string;
   timezone: string;
   encryptedTokens?: string;
+  workingHoursStart?: string;
+  workingHoursEnd?: string;
 }
 
 export interface Event {
@@ -10,6 +12,7 @@ export interface Event {
   title: string;
   description?: string;
   durationMinutes: number;
+  bufferMinutes?: number;
   status: 'draft' | 'published' | 'completed';
   organizerId: string;
   dateRangeStart: Date;
