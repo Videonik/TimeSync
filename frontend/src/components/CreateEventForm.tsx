@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useMutation } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
 import { createEvent } from '../api';
+import { jwtDecode } from 'jwt-decode';
 
 export const CreateEventForm: React.FC = () => {
   const navigate = useNavigate();
@@ -9,18 +10,39 @@ export const CreateEventForm: React.FC = () => {
   const [duration, setDuration] = useState(30);
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
-
   const [participantsInput, setParticipantsInput] = useState('');
+  const [userId, setUserId] = useState<string | null>(null);
+
+  useEffect(() => {
+    const token = localStorage.getItem('jwt_token');
+    if (token) {
+      try {
+        const decoded: any = jwtDecode(token);
+        setUserId(decoded.sub);
+      } catch (e) {
+        console.error('Failed to parse token', e);
+      }
+    }
+  }, []);
 
   const mutation = useMutation({
     mutationFn: (payload: { eventData: any, emails: string[] }) => createEvent(payload.eventData, payload.emails),
     onSuccess: (data) => {
       navigate(`/event/${data.id}`);
     },
+    onError: (error: any) => {
+      alert('Error creating meeting: ' + (error.response?.data?.message || error.message));
+    }
   });
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+
+    if (!userId) {
+      alert('Please log in with Yandex first!');
+      return;
+    }
+
     const emails = participantsInput.split(',').map(email => email.trim()).filter(email => email !== '');
     
     mutation.mutate({
@@ -29,7 +51,7 @@ export const CreateEventForm: React.FC = () => {
         durationMinutes: duration,
         dateRangeStart: new Date(startDate),
         dateRangeEnd: new Date(endDate),
-        organizerId: 'mock-organizer-id', // Would come from auth context eventually
+        organizerId: userId,
         status: 'published'
       },
       emails: emails
