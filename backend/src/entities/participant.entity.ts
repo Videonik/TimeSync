@@ -13,7 +13,7 @@ export class Participant implements IParticipant {
   @Column()
   eventId!: string;
 
-  @ManyToOne(() => Event)
+  @ManyToOne(() => Event, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'eventId' })
   event!: Event;
 

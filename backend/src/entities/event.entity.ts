@@ -19,10 +19,10 @@ export class Event implements IEvent {
   @Column({ type: 'varchar', default: 'draft' })
   status!: 'draft' | 'published' | 'completed';
 
-  @Column()
+  @Column({ nullable: true })
   organizerId!: string;
 
-  @ManyToOne(() => User)
+  @ManyToOne(() => User, { nullable: true })
   @JoinColumn({ name: 'organizerId' })
   organizer!: User;
 

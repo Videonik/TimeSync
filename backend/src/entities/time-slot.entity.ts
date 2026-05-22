@@ -10,7 +10,7 @@ export class TimeSlot implements ITimeSlot {
   @Column()
   eventId!: string;
 
-  @ManyToOne(() => Event)
+  @ManyToOne(() => Event, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'eventId' })
   event!: Event;
 
