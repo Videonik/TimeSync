@@ -21,16 +21,27 @@ import { YandexCalendarService } from './calendar/yandex-calendar.service';
     }),
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],
-      useFactory: (configService: ConfigService) => ({
-        type: 'postgres',
-        host: configService.get<string>('DB_HOST', 'localhost'),
-        port: configService.get<number>('DB_PORT', 5433),
-        username: configService.get<string>('DB_USER', 'postgres'),
-        password: configService.get<string>('DB_PASSWORD', 'password'),
-        database: configService.get<string>('DB_NAME', 'scheduler'),
-        entities: [User, Event, TimeSlot, Participant],
-        synchronize: true, // Auto create tables for dev
-      }),
+      useFactory: (configService: ConfigService) => {
+        const dbType = configService.get<string>('DB_TYPE', 'sqlite');
+        if (dbType === 'sqlite') {
+          return {
+            type: 'better-sqlite3',
+            database: configService.get<string>('DB_NAME', 'scheduler.sqlite'),
+            entities: [User, Event, TimeSlot, Participant],
+            synchronize: true, // Auto create tables for dev
+          } as any;
+        }
+        return {
+          type: 'postgres',
+          host: configService.get<string>('DB_HOST', 'localhost'),
+          port: configService.get<number>('DB_PORT', 5433),
+          username: configService.get<string>('DB_USER', 'postgres'),
+          password: configService.get<string>('DB_PASSWORD', 'password'),
+          database: configService.get<string>('DB_NAME', 'scheduler'),
+          entities: [User, Event, TimeSlot, Participant],
+          synchronize: true, // Auto create tables for dev
+        } as any;
+      },
       inject: [ConfigService],
     }),
     TypeOrmModule.forFeature([User, Event, TimeSlot, Participant]),
