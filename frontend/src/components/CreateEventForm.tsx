@@ -38,7 +38,19 @@ export const CreateEventForm: React.FC = () => {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!userId) {
+    const token = localStorage.getItem('jwt_token');
+    let currentUserId = userId;
+    if (token) {
+      try {
+        const decoded: any = jwtDecode(token);
+        currentUserId = decoded.sub;
+        if (!userId) setUserId(decoded.sub);
+      } catch (e) {
+        console.error('Failed to parse token on submit', e);
+      }
+    }
+
+    if (!currentUserId) {
       alert('Please log in with Yandex first!');
       return;
     }
@@ -51,7 +63,7 @@ export const CreateEventForm: React.FC = () => {
         durationMinutes: duration,
         dateRangeStart: new Date(startDate),
         dateRangeEnd: new Date(endDate),
-        organizerId: userId,
+        organizerId: currentUserId,
         status: 'published'
       },
       emails: emails
